@@ -3,6 +3,10 @@
 #define KEY_W 92
 #define KEY_H 92
 
+void button_fun_cb(epdgui_args_vector_t &args) {
+    log_i("Doing fun!");
+}
+
 Frame_Main::Frame_Main(void): Frame_Base(false)
 {
     _frame_name = "Frame_Main";
@@ -12,6 +16,14 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _bar->createCanvas(540, 44);
     _bar->setTextSize(2);
 
+    _button = new EPDGUI_Button(20, 90, KEY_W, KEY_H);
+    _button->CanvasNormal()->setTextSize(3);
+    _button->CanvasNormal()->setTextDatum(CC_DATUM);
+    _button->CanvasNormal()->drawString("Fun!", 46, 46);
+    *(_button->CanvasPressed()) = *(_button->CanvasNormal());
+    _button->CanvasPressed()->ReverseColor();
+    _button->Bind(EPDGUI_Button::EVENT_RELEASED, button_fun_cb);
+
     _time = 0;
     _next_update_time = 0;
 }
@@ -19,6 +31,7 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
 
 Frame_Main::~Frame_Main(void)
 {
+    delete _button;
 }
 
 void Frame_Main::DrawStatusBar(m5epd_update_mode_t mode)
@@ -75,10 +88,12 @@ void Frame_Main::DrawStatusBar(m5epd_update_mode_t mode)
     _next_update_time = (60 - time_struct.sec) * 1000;
 }
 
-
 int Frame_Main::init(epdgui_args_vector_t &args)
 {
     _is_run = 1;
+
+    EPDGUI_AddObject(_button);
+
     _time = 0;
     _next_update_time = 0;
     DrawStatusBar(UPDATE_MODE_NONE);
