@@ -3,7 +3,7 @@
 
 #define ENABLE_AUTO_POWER_SAVE true
 static const uint32_t TIME_BEFORE_SHUTDOWN_PROMPT_MS = 60 * 1000;
-static const uint32_t SHUTDOWN_PROMPT_DELAY_MS = 10 * 1000;
+static const uint32_t SHUTDOWN_PROMPT_DELAY_MS = 30 * 1000;
 static const uint32_t TIME_BEFORE_SHUTDOWN_MS = TIME_BEFORE_SHUTDOWN_PROMPT_MS + SHUTDOWN_PROMPT_DELAY_MS;
 
 void Shutdown()
@@ -17,6 +17,18 @@ void Shutdown()
     while(1);
 }
 
+void Frame_Base::exitbtn(String title, uint16_t width)
+{
+    _key_exit = new EPDGUI_Button(8, 12, width, 48);
+    _key_exit->CanvasNormal()->fillCanvas(0);
+    _key_exit->CanvasNormal()->setTextSize(3);
+    _key_exit->CanvasNormal()->setTextDatum(CL_DATUM);
+    _key_exit->CanvasNormal()->setTextColor(15);
+    _key_exit->CanvasNormal()->drawString("< " + title, 15, 28);
+    *(_key_exit->CanvasPressed()) = *(_key_exit->CanvasNormal());
+    _key_exit->CanvasPressed()->ReverseColor();
+}
+
 Frame_Base::Frame_Base(bool _has_title)
 {
     if(_has_title)
@@ -26,7 +38,7 @@ Frame_Base::Frame_Base(bool _has_title)
         _canvas_title->drawFastHLine(0, 64, 540, 15);
         _canvas_title->drawFastHLine(0, 63, 540, 15);
         _canvas_title->drawFastHLine(0, 62, 540, 15);
-        _canvas_title->setTextSize(2);
+        _canvas_title->setTextSize(4);
         _canvas_title->setTextDatum(CC_DATUM);
     }
     _frame_id = 0;

@@ -1,10 +1,19 @@
 #include "frame_main.h"
+#include "frame_weather.h"
 
 #define KEY_W 92
 #define KEY_H 92
 
 void button_fun_cb(epdgui_args_vector_t &args) {
-    log_i("Doing fun!");
+    log_i("Open weahter frame");
+    Frame_Base *frame = EPDGUI_GetFrame("Frame_Weather");
+    if (frame == NULL)
+    {
+        frame = new WeatherFrame();
+        EPDGUI_AddFrame("Frame_Weather", frame);
+    }
+    EPDGUI_PushFrame(frame);
+    *((int*)(args[0])) = 0;
 }
 
 Frame_Main::Frame_Main(void): Frame_Base(false)
@@ -19,9 +28,10 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _button = new EPDGUI_Button(20, 90, KEY_W, KEY_H);
     _button->CanvasNormal()->setTextSize(3);
     _button->CanvasNormal()->setTextDatum(CC_DATUM);
-    _button->CanvasNormal()->drawString("Fun!", 46, 46);
+    _button->CanvasNormal()->pushImage(0, 0, 92, 92, image_weather_button_92x92);
     *(_button->CanvasPressed()) = *(_button->CanvasNormal());
     _button->CanvasPressed()->ReverseColor();
+    _button->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
     _button->Bind(EPDGUI_Button::EVENT_RELEASED, button_fun_cb);
 
     _time = 0;
