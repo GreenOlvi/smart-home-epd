@@ -1,16 +1,27 @@
 #include "frame_main.h"
 #include "frame_weather.h"
+#include "frame_todo.h"
 
 #define KEY_W 92
 #define KEY_H 92
 
-void button_fun_cb(epdgui_args_vector_t &args) {
-    log_i("Open weahter frame");
+void button_weather_cb(epdgui_args_vector_t &args) {
     Frame_Base *frame = EPDGUI_GetFrame("Frame_Weather");
     if (frame == NULL)
     {
         frame = new WeatherFrame();
         EPDGUI_AddFrame("Frame_Weather", frame);
+    }
+    EPDGUI_PushFrame(frame);
+    *((int*)(args[0])) = 0;
+}
+
+void button_todo_cb(epdgui_args_vector_t &args) {
+    Frame_Base *frame = EPDGUI_GetFrame("Frame_Todo");
+    if (frame == NULL)
+    {
+        frame = new TodoFrame();
+        EPDGUI_AddFrame("Frame_Todo", frame);
     }
     EPDGUI_PushFrame(frame);
     *((int*)(args[0])) = 0;
@@ -25,14 +36,23 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _bar->createCanvas(540, 44);
     _bar->setTextSize(2);
 
-    _button = new EPDGUI_Button(20, 90, KEY_W, KEY_H);
-    _button->CanvasNormal()->setTextSize(3);
-    _button->CanvasNormal()->setTextDatum(CC_DATUM);
-    _button->CanvasNormal()->pushImage(0, 0, 92, 92, image_weather_button_92x92);
-    *(_button->CanvasPressed()) = *(_button->CanvasNormal());
-    _button->CanvasPressed()->ReverseColor();
-    _button->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
-    _button->Bind(EPDGUI_Button::EVENT_RELEASED, button_fun_cb);
+    _weatherButton = new EPDGUI_Button(20, 90, KEY_W, KEY_H);
+    _weatherButton->CanvasNormal()->setTextSize(3);
+    _weatherButton->CanvasNormal()->setTextDatum(CC_DATUM);
+    _weatherButton->CanvasNormal()->pushImage(0, 0, 92, 92, image_weather_button_92x92);
+    *(_weatherButton->CanvasPressed()) = *(_weatherButton->CanvasNormal());
+    _weatherButton->CanvasPressed()->ReverseColor();
+    _weatherButton->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
+    _weatherButton->Bind(EPDGUI_Button::EVENT_RELEASED, button_weather_cb);
+
+    _todoButton = new EPDGUI_Button(132, 90, KEY_W, KEY_H);
+    _todoButton->CanvasNormal()->setTextSize(3);
+    _todoButton->CanvasNormal()->setTextDatum(CC_DATUM);
+    _todoButton->CanvasNormal()->pushImage(0, 0, 92, 92, image_todo_button_92x92);
+    *(_todoButton->CanvasPressed()) = *(_todoButton->CanvasNormal());
+    _todoButton->CanvasPressed()->ReverseColor();
+    _todoButton->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
+    _todoButton->Bind(EPDGUI_Button::EVENT_RELEASED, button_todo_cb);
 
     _time = 0;
     _next_update_time = 0;
@@ -41,7 +61,8 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
 
 Frame_Main::~Frame_Main(void)
 {
-    delete _button;
+    delete _weatherButton;
+    delete _todoButton;
 }
 
 void Frame_Main::DrawStatusBar(m5epd_update_mode_t mode)
@@ -102,7 +123,8 @@ int Frame_Main::init(epdgui_args_vector_t &args)
 {
     _is_run = 1;
 
-    EPDGUI_AddObject(_button);
+    EPDGUI_AddObject(_weatherButton);
+    EPDGUI_AddObject(_todoButton);
 
     _time = 0;
     _next_update_time = 0;

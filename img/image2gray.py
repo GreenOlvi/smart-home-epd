@@ -5,11 +5,9 @@
 import os
 from PIL import Image
 import re
-import copy
 import struct
-import shutil
 
-output = '../src/images.h'
+output = 'src/images.h'
 
 GRAYSCALE_MAP = [0 for i in range(256)]
 
@@ -77,7 +75,7 @@ def getBitmap(img):
 
     return bytes(buffer)
 
-png_files = walkFile("./")
+png_files = walkFile("./img/")
 
 dstf = open(output, 'w')
 dstf.write('#ifndef images_h\n#define images_h\n\n')
