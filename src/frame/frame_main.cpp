@@ -3,6 +3,9 @@
 #define KEY_W 92
 #define KEY_H 92
 
+#define BUTTON_STATE_WIFI_ON 0
+#define BUTTON_STATE_WIFI_OFF 1
+
 void button_weather_cb(epdgui_args_vector_t &args) {
     Frame_Base *frame = EPDGUI_GetFrame("Frame_Weather");
     if (frame == NULL)
@@ -25,19 +28,39 @@ void button_todo_cb(epdgui_args_vector_t &args) {
     *((int*)(args[0])) = 0;
 }
 
-bool wifi = false;
+void wifiConnectBlocking() {
+    WiFi.persistent(false);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    auto result = WiFi.waitForConnectResult();
+    Serial.print("WiFi begin result: ");
+    Serial.println(result);
+}
+
+void wifiDisconnectBlocking() {
+    WiFi.disconnect(true, true);
+    WiFi.mode(WIFI_OFF);
+    delay(1000);
+    Serial.println("WiFi stopped");
+}
 
 void button_wifi_on_cb(epdgui_args_vector_t &args) {
-    wifi = true;
     Serial.println("wifi on");
+
+    wifiConnectBlocking();
+
     EPDGUI_Switch* button = (EPDGUI_Switch*)(args[0]);
+    button->setState(BUTTON_STATE_WIFI_ON);
     ((Frame_Main*)(args[1]))->updateStatusBar();
 }
 
 void button_wifi_off_cb(epdgui_args_vector_t &args) {
-    wifi = false;
     Serial.println("wifi off");
+
+    wifiDisconnectBlocking();
+
     EPDGUI_Switch* button = (EPDGUI_Switch*)(args[0]);
+    button->setState(BUTTON_STATE_WIFI_OFF);
     ((Frame_Main*)(args[1]))->updateStatusBar();
 }
 
@@ -69,19 +92,21 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _todoButton->Bind(EPDGUI_Button::EVENT_RELEASED, button_todo_cb);
 
     _wifiButton = new EPDGUI_Switch(2, 244, 90, KEY_W, KEY_H);
-    _wifiButton->Canvas(0)->pushImage(0, 0, 92, 92, image_button_wifi_on_92x92);
-    _wifiButton->AddArgs(0, 0, (void*)_wifiButton);
-    _wifiButton->AddArgs(0, 1, (void*)this);
-    _wifiButton->Bind(0, button_wifi_on_cb);
-    _wifiButton->Canvas(1)->pushImage(0, 0, 92, 92, image_button_wifi_off_92x92);
-    _wifiButton->AddArgs(1, 0, (void*)_wifiButton);
-    _wifiButton->AddArgs(1, 1, (void*)this);
-    _wifiButton->Bind(1, button_wifi_off_cb);
+    _wifiButton->Canvas(BUTTON_STATE_WIFI_ON)->fillCanvas(0);
+    _wifiButton->Canvas(BUTTON_STATE_WIFI_ON)->pushImage(0, 0, 92, 92, image_button_wifi_on_92x92);
+    _wifiButton->AddArgs(BUTTON_STATE_WIFI_ON, 0, (void*)_wifiButton);
+    _wifiButton->AddArgs(BUTTON_STATE_WIFI_ON, 1, (void*)this);
+    _wifiButton->Bind(BUTTON_STATE_WIFI_ON, button_wifi_on_cb);
+    _wifiButton->Canvas(BUTTON_STATE_WIFI_OFF)->fillCanvas(0);
+    _wifiButton->Canvas(BUTTON_STATE_WIFI_OFF)->pushImage(0, 0, 92, 92, image_button_wifi_off_92x92);
+    _wifiButton->AddArgs(BUTTON_STATE_WIFI_OFF, 0, (void*)_wifiButton);
+    _wifiButton->AddArgs(BUTTON_STATE_WIFI_OFF, 1, (void*)this);
+    _wifiButton->Bind(BUTTON_STATE_WIFI_OFF, button_wifi_off_cb);
 
-    if (wifi) {
-        _wifiButton->setState(0);
+    if (WiFi.isConnected()) {
+        _wifiButton->setState(BUTTON_STATE_WIFI_ON);
     } else {
-        _wifiButton->setState(1);
+        _wifiButton->setState(BUTTON_STATE_WIFI_OFF);
     }
 
     _time = 0;
@@ -109,6 +134,11 @@ void Frame_Main::DrawStatusBar(m5epd_update_mode_t mode)
     _bar->drawFastHLine(0, 43, 540, 15);
     _bar->setTextDatum(CL_DATUM);
     _bar->drawString("M5Paper", 10, 27);
+
+    //WiFi
+    if (WiFi.isConnected()) {
+        _bar->pushImage(400, 8, 32, 32, image_status_bar_wifi_32x32);
+    }
 
     // Battery
     _bar->setTextDatum(CR_DATUM);

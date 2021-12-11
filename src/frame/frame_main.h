@@ -8,6 +8,7 @@
 #include "epdgui/epdgui_switch.h"
 
 #include <WiFi.h>
+#include "secrets.h"
 
 class Frame_Main : public Frame_Base
 {

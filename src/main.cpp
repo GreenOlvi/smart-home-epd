@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #include <M5EPD.h>
 #include "epdgui/epdgui.h"
 #include "frame/frame.h"
