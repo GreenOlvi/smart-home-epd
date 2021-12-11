@@ -1,5 +1,6 @@
 {
     "files.associations": {
         "vector": "cpp"
-    }
+    },
+    "python.pythonPath": "C:\\Users\\szulo\\AppData\\Local\\Microsoft\\WindowsApps\\python3.9.exe"
 }
