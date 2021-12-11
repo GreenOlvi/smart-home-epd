@@ -16,6 +16,7 @@ class Frame_Main : public Frame_Base
         M5EPD_Canvas *_bar;
         EPDGUI_Button *_weatherButton;
         EPDGUI_Button *_todoButton;
+        EPDGUI_Button *_wifiButton;
         uint32_t _next_update_time;
         uint32_t _time;
 

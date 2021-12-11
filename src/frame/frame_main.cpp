@@ -27,6 +27,14 @@ void button_todo_cb(epdgui_args_vector_t &args) {
     *((int*)(args[0])) = 0;
 }
 
+bool wifi = false;
+
+void button_wifi_cb(epdgui_args_vector_t &args) {
+    Serial.println("Toggle wifi");
+    wifi = !wifi;
+}
+
+
 Frame_Main::Frame_Main(void): Frame_Base(false)
 {
     _frame_name = "Frame_Main";
@@ -39,7 +47,7 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _weatherButton = new EPDGUI_Button(20, 90, KEY_W, KEY_H);
     _weatherButton->CanvasNormal()->setTextSize(3);
     _weatherButton->CanvasNormal()->setTextDatum(CC_DATUM);
-    _weatherButton->CanvasNormal()->pushImage(0, 0, 92, 92, image_weather_button_92x92);
+    _weatherButton->CanvasNormal()->pushImage(0, 0, 92, 92, image_button_weather_92x92);
     *(_weatherButton->CanvasPressed()) = *(_weatherButton->CanvasNormal());
     _weatherButton->CanvasPressed()->ReverseColor();
     _weatherButton->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
@@ -48,11 +56,19 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _todoButton = new EPDGUI_Button(132, 90, KEY_W, KEY_H);
     _todoButton->CanvasNormal()->setTextSize(3);
     _todoButton->CanvasNormal()->setTextDatum(CC_DATUM);
-    _todoButton->CanvasNormal()->pushImage(0, 0, 92, 92, image_todo_button_92x92);
+    _todoButton->CanvasNormal()->pushImage(0, 0, 92, 92, image_button_todo_92x92);
     *(_todoButton->CanvasPressed()) = *(_todoButton->CanvasNormal());
     _todoButton->CanvasPressed()->ReverseColor();
     _todoButton->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
     _todoButton->Bind(EPDGUI_Button::EVENT_RELEASED, button_todo_cb);
+
+    _wifiButton = new EPDGUI_Button(244, 90, KEY_W, KEY_H);
+    _wifiButton->CanvasNormal()->setTextSize(3);
+    _wifiButton->CanvasNormal()->setTextDatum(CC_DATUM);
+    _wifiButton->CanvasNormal()->pushImage(0, 0, 92, 92, image_button_wifi_on_92x92);
+    *(_wifiButton->CanvasPressed()) = *(_wifiButton->CanvasNormal());
+    _wifiButton->CanvasPressed()->ReverseColor();
+    _wifiButton->Bind(EPDGUI_Button::EVENT_RELEASED, button_wifi_cb);
 
     _time = 0;
     _next_update_time = 0;
@@ -63,6 +79,7 @@ Frame_Main::~Frame_Main(void)
 {
     delete _weatherButton;
     delete _todoButton;
+    delete _wifiButton;
 }
 
 void Frame_Main::DrawStatusBar(m5epd_update_mode_t mode)
@@ -125,6 +142,7 @@ int Frame_Main::init(epdgui_args_vector_t &args)
 
     EPDGUI_AddObject(_weatherButton);
     EPDGUI_AddObject(_todoButton);
+    EPDGUI_AddObject(_wifiButton);
 
     _time = 0;
     _next_update_time = 0;
