@@ -1,7 +1,7 @@
 #include "frame_base.h"
 #include "../epdgui/epdgui.h"
 
-#define ENABLE_AUTO_POWER_SAVE true
+#define ENABLE_AUTO_POWER_SAVE false
 static const uint32_t TIME_BEFORE_SHUTDOWN_PROMPT_MS = 60 * 1000;
 static const uint32_t SHUTDOWN_PROMPT_DELAY_MS = 30 * 1000;
 static const uint32_t TIME_BEFORE_SHUTDOWN_MS = TIME_BEFORE_SHUTDOWN_PROMPT_MS + SHUTDOWN_PROMPT_DELAY_MS;
