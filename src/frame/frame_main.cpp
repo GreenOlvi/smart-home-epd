@@ -28,6 +28,17 @@ void button_todo_cb(epdgui_args_vector_t &args) {
     *((int*)(args[0])) = 0;
 }
 
+void button_relay_cb(epdgui_args_vector_t &args) {
+    Frame_Base *frame = EPDGUI_GetFrame("Frame_Relay");
+    if (frame == NULL)
+    {
+        frame = new RelayFrame();
+        EPDGUI_AddFrame("Frame_Relay", frame);
+    }
+    EPDGUI_PushFrame(frame);
+    *((int*)(args[0])) = 0;
+}
+
 void wifiConnectBlocking() {
     WiFi.persistent(false);
     WiFi.mode(WIFI_STA);
@@ -73,7 +84,23 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _bar->createCanvas(540, 44);
     _bar->setTextSize(2);
 
-    _weatherButton = new EPDGUI_Button(20, 90, KEY_W, KEY_H);
+    SetUpButtons();
+
+    _time = 0;
+    _next_update_time = 0;
+}
+
+void Frame_Main::SetUpButtons()
+{
+    SetUpWeatherButton(20, 90);
+    SetUpToDoButton(132, 90);
+    SetUpRelayButton(244, 90);
+    SetUpWiFiButton(356, 90);
+}
+
+void Frame_Main::SetUpWeatherButton(int x, int y)
+{
+    _weatherButton = new EPDGUI_Button(x, y, KEY_W, KEY_H);
     _weatherButton->CanvasNormal()->setTextSize(3);
     _weatherButton->CanvasNormal()->setTextDatum(CC_DATUM);
     _weatherButton->CanvasNormal()->pushImage(0, 0, 92, 92, image_button_weather_92x92);
@@ -81,8 +108,11 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _weatherButton->CanvasPressed()->ReverseColor();
     _weatherButton->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
     _weatherButton->Bind(EPDGUI_Button::EVENT_RELEASED, button_weather_cb);
+}
 
-    _todoButton = new EPDGUI_Button(132, 90, KEY_W, KEY_H);
+void Frame_Main::SetUpToDoButton(int x, int y)
+{
+    _todoButton = new EPDGUI_Button(x, y, KEY_W, KEY_H);
     _todoButton->CanvasNormal()->setTextSize(3);
     _todoButton->CanvasNormal()->setTextDatum(CC_DATUM);
     _todoButton->CanvasNormal()->pushImage(0, 0, 92, 92, image_button_todo_92x92);
@@ -90,13 +120,29 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _todoButton->CanvasPressed()->ReverseColor();
     _todoButton->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
     _todoButton->Bind(EPDGUI_Button::EVENT_RELEASED, button_todo_cb);
+}
 
-    _wifiButton = new EPDGUI_Switch(2, 244, 90, KEY_W, KEY_H);
+void Frame_Main::SetUpRelayButton(int x, int y)
+{
+    _relayButton = new EPDGUI_Button(x, y, KEY_W, KEY_H);
+    _relayButton->CanvasNormal()->setTextSize(3);
+    _relayButton->CanvasNormal()->setTextDatum(CC_DATUM);
+    _relayButton->CanvasNormal()->pushImage(0, 0, 92, 92, image_button_relay_92x92);
+    *(_relayButton->CanvasPressed()) = *(_relayButton->CanvasNormal());
+    _relayButton->CanvasPressed()->ReverseColor();
+    _relayButton->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
+    _relayButton->Bind(EPDGUI_Button::EVENT_RELEASED, button_relay_cb);
+}
+
+void Frame_Main::SetUpWiFiButton(int x, int y)
+{
+    _wifiButton = new EPDGUI_Switch(2, x, y, KEY_W, KEY_H);
     _wifiButton->Canvas(BUTTON_STATE_WIFI_ON)->fillCanvas(0);
     _wifiButton->Canvas(BUTTON_STATE_WIFI_ON)->pushImage(0, 0, 92, 92, image_button_wifi_on_92x92);
     _wifiButton->AddArgs(BUTTON_STATE_WIFI_ON, 0, (void*)_wifiButton);
     _wifiButton->AddArgs(BUTTON_STATE_WIFI_ON, 1, (void*)this);
     _wifiButton->Bind(BUTTON_STATE_WIFI_ON, button_wifi_on_cb);
+
     _wifiButton->Canvas(BUTTON_STATE_WIFI_OFF)->fillCanvas(0);
     _wifiButton->Canvas(BUTTON_STATE_WIFI_OFF)->pushImage(0, 0, 92, 92, image_button_wifi_off_92x92);
     _wifiButton->AddArgs(BUTTON_STATE_WIFI_OFF, 0, (void*)_wifiButton);
@@ -108,16 +154,13 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     } else {
         _wifiButton->setState(BUTTON_STATE_WIFI_OFF);
     }
-
-    _time = 0;
-    _next_update_time = 0;
 }
-
 
 Frame_Main::~Frame_Main(void)
 {
     delete _weatherButton;
     delete _todoButton;
+    delete _relayButton;
     delete _wifiButton;
 }
 
@@ -128,7 +171,6 @@ void Frame_Main::DrawStatusBar(m5epd_update_mode_t mode)
         return;
     }
 
-    char buf[20];
     _bar->setTextSize(2);
     _bar->fillCanvas(0);
     _bar->drawFastHLine(0, 43, 540, 15);
@@ -140,9 +182,27 @@ void Frame_Main::DrawStatusBar(m5epd_update_mode_t mode)
         _bar->pushImage(400, 8, 32, 32, image_status_bar_wifi_32x32);
     }
 
-    // Battery
+    DrawBattery(498, 8);
+
+    // Time
+    char buf[20];
+    rtc_time_t time_struct;
+    rtc_date_t date_struct;
+    M5.RTC.getTime(&time_struct);
+    M5.RTC.getDate(&date_struct);
+    sprintf(buf, "%2d:%02d", time_struct.hour, time_struct.min);
+    _bar->setTextDatum(CC_DATUM);
+    _bar->drawString(buf, 270, 27);
+    _bar->pushCanvas(0, 0, mode);
+
+    _time = millis();
+    _next_update_time = (60 - time_struct.sec) * 1000;
+}
+
+void Frame_Main::DrawBattery(int x, int y)
+{
     _bar->setTextDatum(CR_DATUM);
-    _bar->pushImage(498, 8, 32, 32, image_status_bar_battery_32x32);
+    _bar->pushImage(x, y, 32, 32, image_status_bar_battery_32x32);
     uint32_t vol = M5.getBatteryVoltage();
 
     if(vol < 3300)
@@ -162,23 +222,13 @@ void Frame_Main::DrawStatusBar(m5epd_update_mode_t mode)
     {
         battery = 1;
     }
-    uint8_t px = battery * 25;
+
+    char buf[20];
     sprintf(buf, "%d%%", (int)(battery * 100));
-    _bar->drawString(buf, 498 - 10, 27);
-    _bar->fillRect(498 + 3, 8 + 10, px, 13, 15);
 
-    // Time
-    rtc_time_t time_struct;
-    rtc_date_t date_struct;
-    M5.RTC.getTime(&time_struct);
-    M5.RTC.getDate(&date_struct);
-    sprintf(buf, "%2d:%02d", time_struct.hour, time_struct.min);
-    _bar->setTextDatum(CC_DATUM);
-    _bar->drawString(buf, 270, 27);
-    _bar->pushCanvas(0, 0, mode);
-
-    _time = millis();
-    _next_update_time = (60 - time_struct.sec) * 1000;
+    uint8_t px = battery * 25;
+    _bar->drawString(buf, x - 10, y + 19);
+    _bar->fillRect(x + 3, y + 10, px, 13, 15);
 }
 
 int Frame_Main::init(epdgui_args_vector_t &args)
@@ -187,6 +237,7 @@ int Frame_Main::init(epdgui_args_vector_t &args)
 
     EPDGUI_AddObject(_weatherButton);
     EPDGUI_AddObject(_todoButton);
+    EPDGUI_AddObject(_relayButton);
     EPDGUI_AddObject(_wifiButton);
 
     _time = 0;

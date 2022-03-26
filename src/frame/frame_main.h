@@ -2,8 +2,9 @@
 #define _FRAME_MAIN_H_
 
 #include "frame_base.h"
-#include "frame_weather.h"
+#include "frame_relay.h"
 #include "frame_todo.h"
+#include "frame_weather.h"
 #include "epdgui/epdgui.h"
 #include "epdgui/epdgui_switch.h"
 
@@ -23,11 +24,19 @@ class Frame_Main : public Frame_Base
         M5EPD_Canvas *_bar;
         EPDGUI_Button *_weatherButton;
         EPDGUI_Button *_todoButton;
+        EPDGUI_Button *_relayButton;
         EPDGUI_Switch *_wifiButton;
         uint32_t _next_update_time;
         uint32_t _time;
 
         void DrawStatusBar(m5epd_update_mode_t mode);
+        void DrawBattery(int x, int y);
+
+        void SetUpButtons();
+        void SetUpWeatherButton(int x, int y);
+        void SetUpToDoButton(int x, int y);
+        void SetUpRelayButton(int x, int y);
+        void SetUpWiFiButton(int x, int y);
 };
 
 #endif //_FRAME_MAIN_H_
