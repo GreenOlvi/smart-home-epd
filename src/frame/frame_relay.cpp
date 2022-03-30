@@ -76,6 +76,14 @@ int RelayFrame::run()
     return _is_run;
 }
 
+void relayButtonCB(epdgui_args_vector_t &args)
+{
+    auto relay = (Relay*)(args[0]);
+    log_i("Toggle relay %s", relay->Name.c_str());
+    auto client = (SmartHomeApiClient*)(args[1]);
+    client->ToggleRelay(relay->Id);
+}
+
 void RelayFrame::updateRelayButtons()
 {
     int i = 0;
@@ -83,6 +91,9 @@ void RelayFrame::updateRelayButtons()
     {
         drawRelayButton(_relayButtons[i], r);
         _relayButtons[i]->Draw(UPDATE_MODE_A2);
+        _relayButtons[i]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, &(_relays->at(i)));
+        _relayButtons[i]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 1, _apiClient);
+        _relayButtons[i]->Bind(EPDGUI_Button::EVENT_RELEASED, relayButtonCB);
         i++;
     }
 
