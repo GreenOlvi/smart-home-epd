@@ -16,7 +16,7 @@ class Frame_Main : public Frame_Base
     public:
         Frame_Main();
         ~Frame_Main();
-        int run();
+        int run() override;
         int init(epdgui_args_vector_t &args);
         void updateStatusBar(void);
 
@@ -28,6 +28,10 @@ class Frame_Main : public Frame_Base
         EPDGUI_Switch *_wifiButton;
         uint32_t _next_update_time;
         uint32_t _time;
+
+        bool _wifiConnect = true;
+
+        void UpdateWiFi(void);
 
         void DrawStatusBar(m5epd_update_mode_t mode);
         void DrawBattery(int x, int y);

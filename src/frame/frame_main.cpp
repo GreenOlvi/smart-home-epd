@@ -242,7 +242,7 @@ int Frame_Main::init(epdgui_args_vector_t &args)
 
     _time = 0;
     _next_update_time = 0;
-    DrawStatusBar(UPDATE_MODE_NONE);
+    DrawStatusBar(UPDATE_MODE_GL16);
     return 9;
 }
 
@@ -250,9 +250,30 @@ int Frame_Main::run()
 {
     Frame_Base::run();
     DrawStatusBar(UPDATE_MODE_GL16);
+    UpdateWiFi();
     return 1;
 }
 
 void Frame_Main::updateStatusBar() {
     _next_update_time = 0;
+}
+
+void Frame_Main::UpdateWiFi()
+{
+    if (WiFi.isConnected() != _wifiConnect)
+    {
+        if (_wifiConnect)
+        {
+            wifiConnectBlocking();
+            _wifiButton->setState(BUTTON_STATE_WIFI_ON);
+        }
+        else
+        {
+            wifiDisconnectBlocking();
+            _wifiButton->setState(BUTTON_STATE_WIFI_OFF);
+        }
+
+        _wifiButton->Draw(UPDATE_MODE_A2);
+        DrawStatusBar(UPDATE_MODE_GL16);
+    }
 }
