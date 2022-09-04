@@ -1,0 +1,14 @@
+{
+    "WiFi": {
+        "SavedNetworks": [
+            {
+                "SSID": "...",
+                "Password": "..."
+            }
+        ],
+        "AutoConnectOnStart": true
+    },
+    "SmartHome": {
+        "BaseUrl": "..."
+    }
+}
