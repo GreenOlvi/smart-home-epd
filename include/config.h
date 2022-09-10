@@ -8,8 +8,8 @@
 static const char *ConfigFile = "/config.json";
 
 struct WiFiNetwork {
-    char SSID[128];
-    char Password[128];
+    String SSID;
+    String Password;
 };
 
 struct WiFiConfig {
@@ -19,7 +19,7 @@ struct WiFiConfig {
 };
 
 struct SmartHomeConfig {
-    char BaseUrl[128];
+    String BaseUrl;
 };
 
 struct GeneralConfiguration {

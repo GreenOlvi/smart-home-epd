@@ -3,25 +3,26 @@
 static const char *TAG = "CONFIG";
 
 void readSmartHomeConfig(const JsonObject &doc, SmartHomeConfig &config) {
-    strlcpy(config.BaseUrl, doc["BaseUrl"], sizeof(config.BaseUrl));
-    ESP_LOGV(TAG, "SmartHome.BaseUrl=%s", config.BaseUrl);
+    config.BaseUrl = doc["BaseUrl"].as<String>();
+    ESP_LOGD(TAG, "SmartHome.BaseUrl=%s", config.BaseUrl);
 }
 
-void readWiFiNetworkConfig(const JsonObject &doc, WiFiNetwork config) {
-    strlcpy(config.SSID, doc["SSID"], sizeof(config.SSID));
-    ESP_LOGV(TAG, "WiFi.SavedNetworks[].SSID=%s", config.SSID);
-    strlcpy(config.Password, doc["Password"], sizeof(config.Password));
-    ESP_LOGV(TAG, "WiFi.SavedNetworks[].Password=*****");
+void readWiFiNetworkConfig(const JsonObject &doc, WiFiNetwork &config) {
+    config.SSID = doc["SSID"].as<String>();
+    ESP_LOGD(TAG, "WiFi.SavedNetworks[].SSID=%s", config.SSID);
+
+    config.Password = doc["Password"].as<String>();
+    ESP_LOGD(TAG, "WiFi.SavedNetworks[].Password=******");
 }
 
 void readWiFiConfig(const JsonObject &doc, WiFiConfig &config) {
     config.AutoConnectOnStart = doc["AutoConnectOnStart"].as<bool>();
-    ESP_LOGV(TAG, "WiFi.AutoConnectOnStart=%d", config.AutoConnectOnStart);
+    ESP_LOGD(TAG, "WiFi.AutoConnectOnStart=%d", config.AutoConnectOnStart);
 
     auto networks = doc["SavedNetworks"].as<JsonArray>();
     auto size = networks.size();
     config.SavedNetworksCount = size;
-    ESP_LOGV(TAG, "WiFi.SavedNetworksCount=%d", config.SavedNetworksCount);
+    ESP_LOGD(TAG, "WiFi.SavedNetworksCount=%d", config.SavedNetworksCount);
 
     config.SavedNetworks = new WiFiNetwork[size];
     for (auto i = 0; i < size; i++) {
@@ -36,7 +37,7 @@ void readConfig(const JsonObject &doc, GeneralConfiguration &config) {
 
 bool loadConfiguration(GeneralConfiguration &config) {
     ESP_LOGD(TAG, "Loading config from '%s'", ConfigFile);
-    auto file = LittleFS.open(ConfigFile, "r");
+    auto file = LittleFS.open(ConfigFile, FILE_READ);
     if (!file) {
         ESP_LOGW(TAG, "Could not open config file");
         return false;
@@ -58,4 +59,58 @@ bool loadConfiguration(GeneralConfiguration &config) {
 
     file.close();
     ESP_LOGV(TAG, "File closed");
+
+    return true;
+}
+
+void writeWiFiNetworkConfig(const WiFiNetwork &config, JsonObject &doc) {
+    doc["SSID"] = config.SSID;
+    doc["Password"] = config.Password;
+}
+
+void writeWiFiConfig(const WiFiConfig &config, JsonObject &doc) {
+    auto networks = doc.createNestedArray("SavedNetworks");
+    for (auto i = 0; i < config.SavedNetworksCount; i++) {
+        auto net = networks.createNestedObject();
+        writeWiFiNetworkConfig(config.SavedNetworks[i], net);
+    }
+    doc["AutoConnectOnStart"] = config.AutoConnectOnStart;
+}
+
+void writeSmartHomeConfig(const SmartHomeConfig &config, JsonObject &doc) {
+    doc["BaseUrl"] = config.BaseUrl;
+}
+
+void writeConfig(const GeneralConfiguration &config, JsonDocument &doc) {
+    auto wifi = doc.createNestedObject("WiFi");
+    writeWiFiConfig(config.WiFi, wifi);
+
+    auto sh = doc.createNestedObject("SmartHome");
+    writeSmartHomeConfig(config.SmartHome, sh);
+}
+
+bool saveConfiguration(const GeneralConfiguration &config) {
+    ESP_LOGD(TAG, "Saving config to '%s'", ConfigFile);
+    auto file = LittleFS.open(ConfigFile, FILE_WRITE);
+    if (!file) {
+        ESP_LOGW(TAG, "Could not open config file for writing");
+        return false;
+    }
+    ESP_LOGV(TAG, "File opened");
+
+    StaticJsonDocument<512> doc;
+
+    writeConfig(config, doc);
+    ESP_LOGV(TAG, "Config written");
+
+    if (serializeJson(doc, file) == 0) {
+        ESP_LOGW(TAG, "Failed to serialize config");
+        return false;
+    }
+    ESP_LOGV(TAG, "Config serialized");
+
+    file.close();
+    ESP_LOGV(TAG, "File closed");
+
+    return true;
 }
