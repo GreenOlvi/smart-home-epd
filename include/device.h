@@ -5,7 +5,6 @@
 
 #include "WiFi.h"
 #include "config.h"
-#include "secrets.h"
 
 static const char *TAG = "EPD";
 
@@ -19,6 +18,8 @@ class Device {
 
         void startWiFi(void);
         void stopWiFi(void);
+
+        String smartHomeApiBaseUrl();
 
     private:
         GeneralConfiguration _config;

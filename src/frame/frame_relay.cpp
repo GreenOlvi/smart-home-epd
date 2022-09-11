@@ -18,7 +18,7 @@ RelayFrame::RelayFrame(): Frame_Base(true)
         _relayButtons[i]->CanvasNormal()->setTextColor(15);
     }
 
-    _apiClient = new SmartHomeApiClient(SMART_HOME_API_BASE_URL);
+    _apiClient = new SmartHomeApiClient(EPD.smartHomeApiBaseUrl());
     _reloadRelays = true;
 }
 

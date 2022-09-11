@@ -2,7 +2,7 @@
 #define frame_relay_h
 
 #include <SmartHomeApiClient.h>
-#include "secrets.h"
+#include "device.h"
 #include "frame_base.h"
 #include "epdgui/epdgui.h"
 

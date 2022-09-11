@@ -61,3 +61,7 @@ void Device::logWiFiResult(uint8_t result) {
             break;
     }
 }
+
+String Device::smartHomeApiBaseUrl() {
+    return String(_config.SmartHome.BaseUrl);
+}
