@@ -40,19 +40,11 @@ void button_relay_cb(epdgui_args_vector_t &args) {
 }
 
 void wifiConnectBlocking() {
-    WiFi.persistent(false);
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(WIFI_SSID, WIFI_PASS);
-    auto result = WiFi.waitForConnectResult();
-    Serial.print("WiFi begin result: ");
-    Serial.println(result);
+    EPD.startWiFi();
 }
 
 void wifiDisconnectBlocking() {
-    WiFi.disconnect(true, true);
-    WiFi.mode(WIFI_OFF);
-    delay(1000);
-    Serial.println("WiFi stopped");
+    EPD.stopWiFi();
 }
 
 void button_wifi_on_cb(epdgui_args_vector_t &args) {
