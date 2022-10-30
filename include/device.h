@@ -1,12 +1,9 @@
 #ifndef DEVICE_H
 #define DEVICE_H
 
-#include <map>
-
+#include <M5EPD.h>
 #include "WiFi.h"
 #include "config.h"
-
-static const char *TAG = "EPD";
 
 class Device {
     public:
@@ -26,7 +23,7 @@ class Device {
 
         void mountFs(void);
 
-        int _currentWiFi = 0;
+        int _currentWiFi = 1;
         void logWiFiResult(uint8_t result);
 };
 

@@ -1,9 +1,23 @@
 #include "device.h"
 
+static const char *TAG = "EPD";
+
 Device EPD = Device();
 
 void Device::init() {
+    ESP_LOGD(TAG, "EPD: init()");
+
+    M5.begin(true, false, true, true, false);
+    ESP_LOGD(TAG, "M5 started");
+
+    M5.EPD.SetRotation(M5EPD_Driver::ROTATE_90);
+    M5.EPD.Clear(true);
+    M5.TP.SetRotation(GT911::ROTATE_90);
+    ESP_LOGD(TAG, "Display initialized");
+
     mountFs();
+    ESP_LOGI(TAG, "Mounted LittleFS");
+
     loadConfiguration(_config);
 }
 

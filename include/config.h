@@ -5,8 +5,6 @@
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 
-static const char *ConfigFile = "/config.json";
-
 struct WiFiNetwork {
     String SSID;
     String Password;
@@ -29,5 +27,6 @@ struct GeneralConfiguration {
 
 bool loadConfiguration(GeneralConfiguration &config);
 bool saveConfiguration(const GeneralConfiguration &config);
+void writeConfig(const GeneralConfiguration &config, JsonDocument &doc);
 
 #endif

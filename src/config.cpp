@@ -1,15 +1,16 @@
 #include "config.h"
 
 static const char *TAG = "CONFIG";
+static const char *ConfigFile = "/config.json";
 
 void readSmartHomeConfig(const JsonObject &doc, SmartHomeConfig &config) {
     config.BaseUrl = doc["BaseUrl"].as<String>();
-    ESP_LOGD(TAG, "SmartHome.BaseUrl=%s", config.BaseUrl);
+    ESP_LOGD(TAG, "SmartHome.BaseUrl=%s", config.BaseUrl.c_str());
 }
 
 void readWiFiNetworkConfig(const JsonObject &doc, WiFiNetwork &config) {
     config.SSID = doc["SSID"].as<String>();
-    ESP_LOGD(TAG, "WiFi.SavedNetworks[].SSID=%s", config.SSID);
+    ESP_LOGD(TAG, "WiFi.SavedNetworks[].SSID=%s", config.SSID.c_str());
 
     config.Password = doc["Password"].as<String>();
     ESP_LOGD(TAG, "WiFi.SavedNetworks[].Password=******");
@@ -36,7 +37,7 @@ void readConfig(const JsonObject &doc, GeneralConfiguration &config) {
 }
 
 bool loadConfiguration(GeneralConfiguration &config) {
-    ESP_LOGD(TAG, "Loading config from '%s'", ConfigFile);
+    ESP_LOGD(TAG, "Loading config from '%s' [%s]", ConfigFile, FILE_READ);
     auto file = LittleFS.open(ConfigFile, FILE_READ);
     if (!file) {
         ESP_LOGW(TAG, "Could not open config file");
@@ -48,11 +49,13 @@ bool loadConfiguration(GeneralConfiguration &config) {
 
     auto deserializationError = deserializeJson(doc, file);
     if (deserializationError) {
-        ESP_LOGW(TAG, "Failed to read file");
+        ESP_LOGW(TAG, "Failed to deserialize file");
         return false;
-
     }
     ESP_LOGV(TAG, "File deserialized");
+    #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_VERBOSE
+    serializeJsonPretty(doc, Serial);
+    #endif
 
     readConfig(doc.as<JsonObject>(), config);
     ESP_LOGV(TAG, "Config read");
