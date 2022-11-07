@@ -31,7 +31,7 @@ void Device::mountFs() {
     }
 }
 
-void Device::startWiFi(void) {
+bool Device::startWiFi(void) {
     auto network = _config.WiFi.SavedNetworks[_currentWiFi];
 
     WiFi.persistent(false);
@@ -41,6 +41,8 @@ void Device::startWiFi(void) {
     auto result = WiFi.waitForConnectResult();
     ESP_LOGD(TAG, "WiFi begin result: %d", result);
     logWiFiResult(result);
+
+    return result == WL_CONNECTED;
 }
 
 void Device::stopWiFi(void) {
@@ -48,6 +50,10 @@ void Device::stopWiFi(void) {
     WiFi.mode(WIFI_OFF);
     delay(1000);
     ESP_LOGD(TAG, "WiFi stopped");
+}
+
+bool Device::isWiFiConnected() {
+    return WiFi.isConnected();
 }
 
 void Device::logWiFiResult(uint8_t result) {

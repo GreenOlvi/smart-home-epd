@@ -23,6 +23,7 @@ struct SmartHomeConfig {
 struct GeneralConfiguration {
     WiFiConfig WiFi;
     SmartHomeConfig SmartHome;
+    String NtpServer;
 };
 
 bool loadConfiguration(GeneralConfiguration &config);

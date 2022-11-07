@@ -2,7 +2,8 @@
 #define DEVICE_H
 
 #include <M5EPD.h>
-#include "WiFi.h"
+#include <WiFi.h>
+
 #include "config.h"
 
 class Device {
@@ -13,8 +14,9 @@ class Device {
         GeneralConfiguration config(void);
         void saveConfig(void);
 
-        void startWiFi(void);
+        bool startWiFi(void);
         void stopWiFi(void);
+        bool isWiFiConnected(void);
 
         String smartHomeApiBaseUrl();
 
@@ -23,7 +25,7 @@ class Device {
 
         void mountFs(void);
 
-        int _currentWiFi = 1;
+        int _currentWiFi = 0;
         void logWiFiResult(uint8_t result);
 };
 
