@@ -28,13 +28,16 @@ class Frame_Main : public Frame_Base
         EPDGUI_Button *_todoButton;
         EPDGUI_Button *_relayButton;
         EPDGUI_Switch *_wifiButton;
-        uint32_t _next_update_time;
-        uint32_t _time;
+
+        bool _statusbar_force_update;
+        uint32_t _statusbar_last_draw;
+        uint32_t _statusbar_next_time_update;
 
         bool _wifiConnect = true;
 
         void UpdateWiFi(void);
 
+        void DrawStatusBarIfNeeded(m5epd_update_mode_t mode);
         void DrawStatusBar(m5epd_update_mode_t mode);
         void DrawBattery(int x, int y);
 

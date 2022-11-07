@@ -6,6 +6,8 @@
 #define BUTTON_STATE_WIFI_ON 0
 #define BUTTON_STATE_WIFI_OFF 1
 
+static const char *TAG = "FrameMain";
+
 void button_weather_cb(epdgui_args_vector_t &args) {
     Frame_Base *frame = EPDGUI_GetFrame("Frame_Weather");
     if (frame == NULL)
@@ -70,8 +72,7 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
 
     SetUpButtons();
 
-    _time = 0;
-    _next_update_time = 0;
+    _statusbar_next_time_update = 0;
 }
 
 void Frame_Main::SetUpButtons()
@@ -148,20 +149,28 @@ Frame_Main::~Frame_Main(void)
     delete _wifiButton;
 }
 
-void Frame_Main::DrawStatusBar(m5epd_update_mode_t mode)
-{
-    if((millis() - _time) < _next_update_time)
+void Frame_Main::DrawStatusBarIfNeeded(m5epd_update_mode_t mode) {
+    if (!(millis() > _statusbar_next_time_update || _statusbar_force_update))
     {
         return;
     }
 
+    DrawStatusBar(mode);
+
+    _statusbar_last_draw = millis();
+    _statusbar_force_update = false;
+    ESP_LOGD(TAG, "Last statusbar draw = %d", _statusbar_last_draw);
+}
+
+void Frame_Main::DrawStatusBar(m5epd_update_mode_t mode)
+{
     _bar->setTextSize(2);
     _bar->fillCanvas(0);
     _bar->drawFastHLine(0, 43, 540, 15);
     _bar->setTextDatum(CL_DATUM);
     _bar->drawString("M5Paper", 10, 27);
 
-    //WiFi
+    // WiFi
     if (WiFi.isConnected()) {
         _bar->pushImage(400, 8, 32, 32, image_status_bar_wifi_32x32);
     }
@@ -172,13 +181,16 @@ void Frame_Main::DrawStatusBar(m5epd_update_mode_t mode)
     char buf[20];
     rtc_time_t time_struct;
     M5.RTC.getTime(&time_struct);
+
+    // Set next update before drawing
+    _statusbar_next_time_update = millis() + (60 - time_struct.sec) * 1000;
+
     sprintf(buf, "%2d:%02d", time_struct.hour, time_struct.min);
     _bar->setTextDatum(CC_DATUM);
     _bar->drawString(buf, 270, 27);
     _bar->pushCanvas(0, 0, mode);
 
-    _time = millis();
-    _next_update_time = (60 - time_struct.sec) * 1000;
+    ESP_LOGD(TAG, "Next statusbar time update = %d", _statusbar_next_time_update);
 }
 
 void Frame_Main::DrawBattery(int x, int y)
@@ -222,8 +234,7 @@ int Frame_Main::init(epdgui_args_vector_t &args)
     EPDGUI_AddObject(_relayButton);
     EPDGUI_AddObject(_wifiButton);
 
-    _time = 0;
-    _next_update_time = 0;
+    _statusbar_next_time_update = 0;
     DrawStatusBar(UPDATE_MODE_GL16);
     return 9;
 }
@@ -231,13 +242,14 @@ int Frame_Main::init(epdgui_args_vector_t &args)
 int Frame_Main::run()
 {
     Frame_Base::run();
-    DrawStatusBar(UPDATE_MODE_GL16);
+    DrawStatusBarIfNeeded(UPDATE_MODE_GL16);
     UpdateWiFi();
     return 1;
 }
 
 void Frame_Main::updateStatusBar() {
-    _next_update_time = 0;
+    _statusbar_force_update = true;
+    ESP_LOGD(TAG, "Force update statusbar = true");
 }
 
 void Frame_Main::UpdateWiFi()
@@ -255,8 +267,8 @@ void Frame_Main::UpdateWiFi()
             _wifiButton->setState(BUTTON_STATE_WIFI_OFF);
         }
 
+        updateStatusBar();
         _wifiButton->Draw(UPDATE_MODE_A2);
-        DrawStatusBar(UPDATE_MODE_GL16);
     }
 }
 
