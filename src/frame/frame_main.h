@@ -19,6 +19,8 @@ class Frame_Main : public Frame_Base
         int run() override;
         int init(epdgui_args_vector_t &args);
         void updateStatusBar(void);
+        void wifiConnectBlocking(void);
+        void wifiDisconnectBlocking(void);
 
     private:
         M5EPD_Canvas *_bar;

@@ -1,6 +1,7 @@
 #include "device.h"
 
 static const char *TAG = "EPD";
+static const char *TIMEZONE = "CET-1CEST,M3.5.0,M10.5.0/3";
 
 Device EPD = Device();
 
@@ -19,6 +20,11 @@ void Device::init() {
     ESP_LOGI(TAG, "Mounted LittleFS");
 
     loadConfiguration(_config);
+
+    _ntpClient = new NTPClient(_wifiUdp, _config.NtpServer.c_str());
+    setenv("TZ", TIMEZONE, 1);
+    tzset();
+    ESP_LOGI(TAG, "Set timezone");
 }
 
 void Device::saveConfig() {
@@ -54,6 +60,29 @@ void Device::stopWiFi(void) {
 
 bool Device::isWiFiConnected() {
     return WiFi.isConnected();
+}
+
+bool Device::updateClock() {
+    ESP_LOGD(TAG, "Updating device clock from NTP");
+    if (!_ntpClient->update()) {
+        return false;
+    }
+
+    long int epoch = _ntpClient->getEpochTime();
+    timeval tv = {epoch, 0};
+    settimeofday(&tv, NULL);
+    ESP_LOGD(TAG, "Epoch %d", epoch);
+
+    tm local;
+    getLocalTime(&local);
+    ESP_LOGD(TAG, "Local time %s", asctime(&local));
+
+    rtc_time_t time(local.tm_hour, local.tm_min, local.tm_sec);
+    M5.RTC.setTime(&time);
+
+    rtc_date_t date(local.tm_wday, local.tm_mon, local.tm_mday, local.tm_year + 1900);
+    M5.RTC.setDate(&date);
+    return true;
 }
 
 void Device::logWiFiResult(uint8_t result) {

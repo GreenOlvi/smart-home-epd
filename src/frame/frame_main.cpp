@@ -39,18 +39,10 @@ void button_relay_cb(epdgui_args_vector_t &args) {
     *((int*)(args[0])) = 0;
 }
 
-void wifiConnectBlocking() {
-    EPD.startWiFi();
-}
-
-void wifiDisconnectBlocking() {
-    EPD.stopWiFi();
-}
-
 void button_wifi_on_cb(epdgui_args_vector_t &args) {
     Serial.println("wifi on");
 
-    wifiConnectBlocking();
+    ((Frame_Main*)(args[1]))->wifiConnectBlocking();
 
     EPDGUI_Switch* button = (EPDGUI_Switch*)(args[0]);
     button->setState(BUTTON_STATE_WIFI_ON);
@@ -60,7 +52,7 @@ void button_wifi_on_cb(epdgui_args_vector_t &args) {
 void button_wifi_off_cb(epdgui_args_vector_t &args) {
     Serial.println("wifi off");
 
-    wifiDisconnectBlocking();
+    ((Frame_Main*)(args[1]))->wifiDisconnectBlocking();
 
     EPDGUI_Switch* button = (EPDGUI_Switch*)(args[0]);
     button->setState(BUTTON_STATE_WIFI_OFF);
@@ -179,9 +171,7 @@ void Frame_Main::DrawStatusBar(m5epd_update_mode_t mode)
     // Time
     char buf[20];
     rtc_time_t time_struct;
-    rtc_date_t date_struct;
     M5.RTC.getTime(&time_struct);
-    M5.RTC.getDate(&date_struct);
     sprintf(buf, "%2d:%02d", time_struct.hour, time_struct.min);
     _bar->setTextDatum(CC_DATUM);
     _bar->drawString(buf, 270, 27);
@@ -252,7 +242,7 @@ void Frame_Main::updateStatusBar() {
 
 void Frame_Main::UpdateWiFi()
 {
-    if (WiFi.isConnected() != _wifiConnect)
+    if (EPD.isWiFiConnected() != _wifiConnect)
     {
         if (_wifiConnect)
         {
@@ -268,4 +258,14 @@ void Frame_Main::UpdateWiFi()
         _wifiButton->Draw(UPDATE_MODE_A2);
         DrawStatusBar(UPDATE_MODE_GL16);
     }
+}
+
+void Frame_Main::wifiConnectBlocking() {
+    if (EPD.startWiFi()) {
+        EPD.updateClock();
+    }
+}
+
+void Frame_Main::wifiDisconnectBlocking() {
+    EPD.stopWiFi();
 }
