@@ -34,6 +34,11 @@ void readWiFiConfig(const JsonObject &doc, WiFiConfig &config) {
 void readConfig(const JsonObject &doc, GeneralConfiguration &config) {
     readSmartHomeConfig(doc["SmartHome"].as<JsonObject>(), config.SmartHome);
     readWiFiConfig(doc["WiFi"].as<JsonObject>(), config.WiFi);
+
+    config.NtpServer = doc["NtpServer"].as<String>();
+    ESP_LOGD(TAG, "NtpServer=%s", config.NtpServer.c_str());
+    config.Timezone = doc["Timezone"].as<String>();
+    ESP_LOGD(TAG, "Timezone=%s", config.Timezone.c_str());
 }
 
 bool loadConfiguration(GeneralConfiguration &config) {
@@ -90,6 +95,9 @@ void writeConfig(const GeneralConfiguration &config, JsonDocument &doc) {
 
     auto sh = doc.createNestedObject("SmartHome");
     writeSmartHomeConfig(config.SmartHome, sh);
+
+    doc["NtpServer"] = config.NtpServer;
+    doc["Timezone"] = config.Timezone;
 }
 
 bool saveConfiguration(const GeneralConfiguration &config) {

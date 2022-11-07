@@ -2,8 +2,10 @@
 #define DEVICE_H
 
 #include <M5EPD.h>
-#include "WiFi.h"
+#include <WiFi.h>
+
 #include "config.h"
+#include "time_module.h"
 
 class Device {
     public:
@@ -13,17 +15,20 @@ class Device {
         GeneralConfiguration config(void);
         void saveConfig(void);
 
-        void startWiFi(void);
+        bool startWiFi(void);
         void stopWiFi(void);
+        bool isWiFiConnected(void);
 
         String smartHomeApiBaseUrl();
+
+        TimeModule Time = TimeModule(&M5.RTC);
 
     private:
         GeneralConfiguration _config;
 
         void mountFs(void);
 
-        int _currentWiFi = 1;
+        int _currentWiFi = 0;
         void logWiFiResult(uint8_t result);
 };
 
