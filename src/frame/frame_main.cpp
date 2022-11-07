@@ -275,7 +275,7 @@ void Frame_Main::UpdateWiFi()
 
 void Frame_Main::wifiConnectBlocking() {
     if (EPD.startWiFi()) {
-        EPD.updateClock();
+        EPD.Time.updateClock();
     }
 }
 

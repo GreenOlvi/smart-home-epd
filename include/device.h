@@ -3,9 +3,9 @@
 
 #include <M5EPD.h>
 #include <WiFi.h>
-#include <NTPClient.h>
 
 #include "config.h"
+#include "time_module.h"
 
 class Device {
     public:
@@ -19,22 +19,17 @@ class Device {
         void stopWiFi(void);
         bool isWiFiConnected(void);
 
-        bool updateClock(void);
-
         String smartHomeApiBaseUrl();
+
+        TimeModule Time = TimeModule(&M5.RTC);
 
     private:
         GeneralConfiguration _config;
 
         void mountFs(void);
 
-        void initTime(void);
-
         int _currentWiFi = 0;
         void logWiFiResult(uint8_t result);
-
-        WiFiUDP _wifiUdp;
-        NTPClient *_ntpClient;
 };
 
 extern Device EPD;
