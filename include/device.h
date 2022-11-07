@@ -28,6 +28,8 @@ class Device {
 
         void mountFs(void);
 
+        void initTime(void);
+
         int _currentWiFi = 0;
         void logWiFiResult(uint8_t result);
 

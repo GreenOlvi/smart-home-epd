@@ -20,11 +20,7 @@ void Device::init() {
 
     loadConfiguration(_config);
 
-    _ntpClient = new NTPClient(_wifiUdp, _config.NtpServer.c_str());
-    auto tz = _config.Timezone.c_str();
-    setenv("TZ", tz, 1);
-    tzset();
-    ESP_LOGI(TAG, "Timezone set to [%s]", tz);
+    initTime();
 }
 
 void Device::saveConfig() {
@@ -60,6 +56,32 @@ void Device::stopWiFi(void) {
 
 bool Device::isWiFiConnected() {
     return WiFi.isConnected();
+}
+
+void Device::initTime() {
+    _ntpClient = new NTPClient(_wifiUdp, _config.NtpServer.c_str());
+
+    auto tz = _config.Timezone.c_str();
+    setenv("TZ", tz, 1);
+    tzset();
+    ESP_LOGI(TAG, "Timezone set to [%s]", tz);
+
+    rtc_date_t date;
+    M5.RTC.getDate(&date);
+    rtc_time_t time;
+    M5.RTC.getTime(&time);
+
+    tm t = {0};
+    t.tm_year = date.year - 1900;
+    t.tm_mon = date.mon;
+    t.tm_mday = date.day;
+    t.tm_hour = time.hour;
+    t.tm_min = time.min;
+    t.tm_sec = time.sec;
+
+    time_t epoch = mktime(&t);
+    timeval tv = {epoch, 0};
+    settimeofday(&tv, NULL);
 }
 
 bool Device::updateClock() {

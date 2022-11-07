@@ -63,6 +63,7 @@ void button_wifi_off_cb(epdgui_args_vector_t &args) {
 
 Frame_Main::Frame_Main(void): Frame_Base(false)
 {
+    ESP_LOGD(TAG, "ctor()");
     _frame_name = "Frame_Main";
     _frame_id = 1;
 
@@ -178,14 +179,14 @@ void Frame_Main::DrawStatusBar(m5epd_update_mode_t mode)
     DrawBattery(498, 8);
 
     // Time
-    char buf[20];
-    rtc_time_t time_struct;
-    M5.RTC.getTime(&time_struct);
+    tm time;
+    getLocalTime(&time);
 
     // Set next update before drawing
-    _statusbar_next_time_update = millis() + (60 - time_struct.sec) * 1000;
+    _statusbar_next_time_update = millis() + (60 - time.tm_sec) * 1000;
 
-    sprintf(buf, "%2d:%02d", time_struct.hour, time_struct.min);
+    char buf[20];
+    sprintf(buf, "%2d:%02d", time.tm_hour, time.tm_min);
     _bar->setTextDatum(CC_DATUM);
     _bar->drawString(buf, 270, 27);
     _bar->pushCanvas(0, 0, mode);
