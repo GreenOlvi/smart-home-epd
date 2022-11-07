@@ -37,6 +37,8 @@ void readConfig(const JsonObject &doc, GeneralConfiguration &config) {
 
     config.NtpServer = doc["NtpServer"].as<String>();
     ESP_LOGD(TAG, "NtpServer=%s", config.NtpServer.c_str());
+    config.Timezone = doc["Timezone"].as<String>();
+    ESP_LOGD(TAG, "Timezone=%s", config.Timezone.c_str());
 }
 
 bool loadConfiguration(GeneralConfiguration &config) {
@@ -95,6 +97,7 @@ void writeConfig(const GeneralConfiguration &config, JsonDocument &doc) {
     writeSmartHomeConfig(config.SmartHome, sh);
 
     doc["NtpServer"] = config.NtpServer;
+    doc["Timezone"] = config.Timezone;
 }
 
 bool saveConfiguration(const GeneralConfiguration &config) {

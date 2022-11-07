@@ -1,7 +1,6 @@
 #include "device.h"
 
 static const char *TAG = "EPD";
-static const char *TIMEZONE = "CET-1CEST,M3.5.0,M10.5.0/3";
 
 Device EPD = Device();
 
@@ -22,9 +21,10 @@ void Device::init() {
     loadConfiguration(_config);
 
     _ntpClient = new NTPClient(_wifiUdp, _config.NtpServer.c_str());
-    setenv("TZ", TIMEZONE, 1);
+    auto tz = _config.Timezone.c_str();
+    setenv("TZ", tz, 1);
     tzset();
-    ESP_LOGI(TAG, "Set timezone");
+    ESP_LOGI(TAG, "Timezone set to [%s]", tz);
 }
 
 void Device::saveConfig() {
