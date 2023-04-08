@@ -69,3 +69,4 @@ tags
 *.out
 *.app
 
+data/root.pem

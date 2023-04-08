@@ -1,6 +1,7 @@
 #include "device.h"
 
 static const char *TAG = "EPD";
+static const char *RootCAFile = "/root.pem";
 
 Device EPD = Device();
 
@@ -54,8 +55,34 @@ void Device::stopWiFi(void) {
     ESP_LOGD(TAG, "WiFi stopped");
 }
 
-bool Device::isWiFiConnected() {
+bool Device::isWiFiConnected(void) {
     return WiFi.isConnected();
+}
+
+WiFiClient* Device::getWiFiClient(void) {
+    if (!_wifiClient) {
+        auto client = new WiFiClientSecure();
+        client->setCACert(getRootCA());
+        _wifiClient = client;
+    }
+    return _wifiClient;
+}
+
+char* Device::getRootCA(void) {
+    if (!_rootCA) {
+        auto file = LittleFS.open(RootCAFile, FILE_READ);
+        if (!file) {
+            ESP_LOGW(TAG, "Could not open root CA file");
+            return nullptr;
+        }
+        ESP_LOGV(TAG, "File opened");
+        String data = file.readString();
+        _rootCA = new char[data.length()];
+        strcpy(_rootCA, data.c_str());
+        ESP_LOGV(TAG, "Root CA = %s", _rootCA);
+        file.close();
+    }
+    return _rootCA;
 }
 
 void Device::logWiFiResult(uint8_t result) {
