@@ -38,7 +38,7 @@ jobs:
       run: pio run -e m5stack-m5paper
 
     - name: Upload build artifact
-      uses: actions/upload-artifact@v3.1.2
+      uses: actions/upload-artifact@v3.1.3
       with:
         name: firmware.bin
         path: .pio/build/m5stack-m5paper/firmware.bin
