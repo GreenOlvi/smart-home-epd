@@ -150,7 +150,8 @@ Frame_Main::~Frame_Main(void)
     delete _wifiButton;
 }
 
-void Frame_Main::DrawStatusBarIfNeeded(m5epd_update_mode_t mode) {
+void Frame_Main::DrawStatusBarIfNeeded(m5epd_update_mode_t mode)
+{
     if (!(millis() > _statusbar_next_time_update || _statusbar_force_update))
     {
         return;

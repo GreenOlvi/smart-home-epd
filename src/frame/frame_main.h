@@ -1,6 +1,9 @@
 #ifndef _FRAME_MAIN_H_
 #define _FRAME_MAIN_H_
 
+#define FrameMainId 1
+
+#include "frame.h"
 #include "frame_base.h"
 #include "frame_relay.h"
 #include "frame_todo.h"
