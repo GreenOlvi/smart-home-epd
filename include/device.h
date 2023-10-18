@@ -9,6 +9,7 @@
 
 #include "config.h"
 #include "time_module.h"
+#include "nvs_module.h"
 
 class Device {
     public:
@@ -27,6 +28,7 @@ class Device {
         String smartHomeApiBaseUrl();
 
         TimeModule Time = TimeModule(&M5.RTC);
+        NvsModule Nvs;
 
     private:
         GeneralConfiguration _config;

@@ -11,6 +11,9 @@ void Device::init() {
     M5.begin(true, false, true, true, false);
     ESP_LOGD(TAG, "M5 started");
 
+    M5.RTC.begin();
+    M5.RTC.disableIRQ();
+
     M5.EPD.SetRotation(M5EPD_Driver::ROTATE_90);
     M5.EPD.Clear(true);
     M5.TP.SetRotation(GT911::ROTATE_90);
@@ -22,6 +25,7 @@ void Device::init() {
     loadConfiguration(_config);
 
     Time.init(&_config);
+    Nvs.init();
 }
 
 void Device::saveConfig() {
