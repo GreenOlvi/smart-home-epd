@@ -27,12 +27,13 @@ class Device {
 
         String smartHomeApiBaseUrl();
 
-        TimeModule Time = TimeModule(&M5.RTC);
         NvsModule Nvs;
+        TimeModule Time = TimeModule(&M5.RTC, &Nvs);
 
     private:
         GeneralConfiguration _config;
 
+        void initDisplay(void);
         void mountFs(void);
 
         int _currentWiFi = 0;

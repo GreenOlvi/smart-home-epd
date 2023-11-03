@@ -275,8 +275,9 @@ void Frame_Main::UpdateWiFi()
 }
 
 void Frame_Main::wifiConnectBlocking() {
-    if (EPD.startWiFi()) {
-        EPD.Time.updateClock();
+    if (EPD.startWiFi())
+    {
+        EPD.Time.trySetClockAndRtcFromNtp();
     }
 }
 

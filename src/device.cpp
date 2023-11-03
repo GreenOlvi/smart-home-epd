@@ -14,18 +14,24 @@ void Device::init() {
     M5.RTC.begin();
     M5.RTC.disableIRQ();
 
-    M5.EPD.SetRotation(M5EPD_Driver::ROTATE_90);
-    M5.EPD.Clear(true);
-    M5.TP.SetRotation(GT911::ROTATE_90);
-    ESP_LOGD(TAG, "Display initialized");
+    initDisplay();
 
     mountFs();
     ESP_LOGI(TAG, "Mounted LittleFS");
 
     loadConfiguration(_config);
 
-    Time.init(&_config);
     Nvs.init();
+    Time.init(&_config);
+    Time.trySetClockFromRtc();
+}
+
+void Device::initDisplay()
+{
+    M5.EPD.SetRotation(M5EPD_Driver::ROTATE_90);
+    M5.EPD.Clear(true);
+    M5.TP.SetRotation(GT911::ROTATE_90);
+    ESP_LOGD(TAG, "Display initialized");
 }
 
 void Device::saveConfig() {
